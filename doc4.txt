@@ -1,0 +1,119 @@
+Continuous Integration (CI): A DevOps practice where developers frequently merge code changes into a central repository, triggering automated builds and tests to detect integration bugs early.
+
+Pipeline as Code (Jenkinsfile): A text file stored inside the Git repository that defines the CI pipeline stages using Groovy-based Declarative syntax (pipeline, agent, stages, steps).
+
+GitHub Webhook: An HTTP POST callback triggered automatically by GitHub whenever a git push event occurs, notifying Jenkins at /github-webhook/ to start a build immediately without manual polling.
+
+[Developer commits to test.java]
+       |
+       v
+[GitHub Repository (CI_using_jenkins_pgm_7)]
+       |  (Fires HTTP POST Webhook to /github-webhook/)
+       v
+[Cloudflare Tunnel (https://xxxx.trycloudflare.com)]
+       |  (Forwards public HTTPS request to local port 8080)
+       v
+[Local Jenkins Server (http://localhost:8080)]
+       |  (Detects 'GitHub hook trigger for GITScm polling')
+       v
+[Pipeline Job pulls 'Jenkinsfile' & 'test.java' from SCM]
+       |
+       v
+[Jenkins executes Stage: bat 'javac test.java && java test']
+       |
+       v
+[Build Status: Success (Blue/Green) or Failure (Red)]
+
+PHASE 1: REPOSITORY & PIPELINE-AS-CODE PREPARATION
+--------------------------------------------------------------------------------
+1. Source Code (test.java):
+   Your Java program resides in your GitHub repository (CI_using_jenkins_pgm_7).
+
+2. Pipeline Definition (Jenkinsfile):
+   Create a file named 'Jenkinsfile' (capital J, no file extension) in the root
+   of your GitHub repository with the following declarative pipeline script:
+
+   pipeline {
+       agent any
+
+       stages {
+           stage('Compile and Run') {
+               steps {
+                   bat 'javac test.java && java test'
+               }
+           }
+       }
+   }
+
+
+PHASE 2: EXPOSING LOCAL JENKINS TO GITHUB
+--------------------------------------------------------------------------------
+3. Start Jenkins:
+   Ensure Jenkins is running locally on http://localhost:8080.
+
+4. Start Cloudflare Tunnel:
+   Open PowerShell or Command Prompt and run the tunnel utility so GitHub's
+   cloud servers can reach your local machine:
+
+   .\cloudflared.exe tunnel --url http://localhost:8080
+
+5. Copy Public URL:
+   Copy the generated temporary URL (e.g., https://<random-subdomain>.trycloudflare.com)
+   and keep the terminal window open in the background.
+
+
+PHASE 3: JENKINS PIPELINE CONFIGURATION
+--------------------------------------------------------------------------------
+6. Create Pipeline Job:
+   - Open Jenkins (http://localhost:8080)
+   - Click 'New Item'
+   - Enter an item name -> Select 'Pipeline' -> Click 'OK'
+
+7. Enable Auto-Trigger:
+   - Under 'Build Triggers', check:
+     [x] GitHub hook trigger for GITScm polling
+
+8. Link SCM (Jenkinsfile):
+   - Scroll down to the 'Pipeline' section and configure:
+     * Definition       : Pipeline script from SCM
+     * SCM              : Git
+     * Repository URL   : https://github.com/Tarun345-ai/CI_using_jenkins_pgm_7.git
+     * Branch Specifier : */main
+     * Script Path      : Jenkinsfile
+
+9. Save:
+   - Click 'Save'.
+
+
+PHASE 4: GITHUB WEBHOOK SETUP
+--------------------------------------------------------------------------------
+10. Add Webhook:
+    - Open your GitHub repository -> 'Settings' -> 'Webhooks' -> 'Add webhook'
+
+11. Configure Payload:
+    - Payload URL   : https://<random-subdomain>.trycloudflare.com/github-webhook/
+                      (Note: Must end with '/github-webhook/')
+    - Content type  : application/json
+    - Trigger event : Just the push event
+
+12. Confirm:
+    - Click 'Add webhook' (GitHub sends a test ping and displays a green tick).
+
+
+PHASE 5: AUTOMATED TRIGGER EXECUTION (RUNTIME FLOW)
+--------------------------------------------------------------------------------
+13. Code Change:
+    Edit 'test.java' (either locally via 'git push' or directly on GitHub) and
+    commit the changes.
+
+14. Webhook Dispatch:
+    GitHub immediately dispatches an HTTP POST JSON 'push' payload to your
+    Cloudflare URL.
+
+15. Tunnel Routing:
+    Cloudflare forwards the payload to http://localhost:8080/github-webhook/.
+
+16. Automated Build:
+    Jenkins matches the incoming repository URL with your Pipeline job,
+    automatically clones the latest commit, reads the 'Jenkinsfile', and
+    executes 'javac test.java && java test' without any manual intervention.
