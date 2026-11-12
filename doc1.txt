@@ -1,0 +1,26 @@
+cmd----------->staging------->local git(local repo)-------->github(global repo)
+  git add .           git commmit                    push
+
+git init
+  git config --global user.name "    "
+  git config --global user.email "    "
+  git config --global --list
+  git status
+  git add .
+  git commit -m "        "
+
+  git checkout -b branch_name
+  git checkout master
+  git merge branch_name
+  git log --oneline --graph //--decorate=full,--stat,--all
+
+  git log
+  git reset --hard commit_id
+  git reflog
+
+  5 types of status:
+    tracked,untracked,modified,unmodified and deleted
+
+DVCS->Distributed version control system
+CVCS-> Centralized vcs(ex:svn or cvs)
+      
