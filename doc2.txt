@@ -1,0 +1,65 @@
+Maven -> dependency management tool
+pom->project object model
+maven default build-> validate->compile->test->package
+  
+  
+mavenpract
+├── src/main/java
+├── src/test/java
+│   └── mavenpract.mavenpract
+│       ├── AppTest.java
+│       └── ReadJson.java
+├── JRE System Library [JavaSE-17]
+├── Maven Dependencies
+├── JSON
+│   └── student.json
+├── src
+├── target
+└── pom.xml
+
+
+package mavenpract.mavenpract;
+
+import java.io.FileReader;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+
+public class ReadJson {
+
+	public static void main(String[] args) throws Exception {
+		JSONParser parser = new JSONParser();
+        JSONObject student = (JSONObject) parser.parse(new FileReader("JSON/student.json"));
+
+        System.out.println("Firstname:" + student.get("firstname"));
+        System.out.println("Lastname:" + student.get("lastname"));
+	}
+
+}
+
+{
+	"firstname": "tarun",
+	"lastname": "kumar"
+}
+
+<!-- Source: https://mvnrepository.com/artifact/com.googlecode.json-simple/json-simple -->
+<dependency>
+    <groupId>com.googlecode.json-simple</groupId>
+    <artifactId>json-simple</artifactId>
+    <version>1.1.1</version>
+    <scope>compile</scope>
+</dependency>
+
+  
+1. Create the Maven Project
+File → Project → Maven → Maven Project → Next → In filter: org.apache.maven.archetypes → maven-archetype-quickstart → Next → Give Group Id & Artifact Id → Finish → In terminal click Y → Build success.
+
+2. Create the Java Class
+Right click on src/test/java → New → Create Class → ReadJson → Enter → ReadJson.java.
+
+3. Create the JSON Folder and File
+• Right click on lab2 (your project) → New → Folder → "JSON" (Name of folder)
+• Right click on Json folder → New → File → "student.json" → Write code (backend)
+
+4. Add Dependencies and Run
+For dependencies go to Chrome → Search Maven repository → Mvn repository → Search simple json → json.simple → Select 1.1.1 version → Copy code → Then paste into pom.xml → Run → Get output code.
+
